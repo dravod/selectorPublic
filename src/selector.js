@@ -8,7 +8,7 @@ var traverseDomAndCollectElements = function(matchFunc, startEl) {
   // traverse the DOM tree and collect matching elements in resultSet
   // use matchFunc to identify matching elements
 
-  // YOUR CODE HERE
+
 
   return resultSet;
 };
@@ -18,9 +18,16 @@ var traverseDomAndCollectElements = function(matchFunc, startEl) {
 // return one of these types: id, class, tag.class, tag
 
 var selectorTypeMatcher = function(selector) {
-  // your code here
+  if (selector[0] === "#") {
+    return 'id';
+  } else if (selector[0] === ".") {
+    return 'class';
+  } else if (selector[0] !== "." && selector.includes(".")) {
+    return 'tag.class';
+  } else {
+    return 'tag';
+  }
 };
-
 
 // NOTE ABOUT THE MATCH FUNCTION
 // remember, the returned matchFunction takes an *element* as a
@@ -31,17 +38,41 @@ var matchFunctionMaker = function(selector) {
   var selectorType = selectorTypeMatcher(selector);
   var matchFunction;
   if (selectorType === "id") {
-    // define matchFunction for id
-
+    matchFunction = function(element) {
+      return element.id && (element.id.toLowerCase() === selector.slice(1).toLowerCase());
+    }
   } else if (selectorType === "class") {
-    // define matchFunction for class
+    matchFunction = function(element) {
+      let retBool = false;
+      let classChildren = element.className.split(" ");
+      for (child = 0; child < classChildren.length; child++) {
+        if (classChildren[child].toLowerCase() === selector.slice(1).toLowerCase()) {
+          retBool = true;
+        }
+      }
+      return element.className && retBool;
+    }
 
   } else if (selectorType === "tag.class") {
-    // define matchFunction for tag.class
+    matchFunction = function(element) {
+      console.log(element.tagName.toLowerCase(), selector.toLowerCase());
+      let tagBool = element.tagName && (element.tagName.toLowerCase() ===
+      selector.slice(0,selector.indexOf(".")).toLowerCase());
+      let classBool = false;
+      let classChildren = element.className.split(" ");
+      for (child = 0; child < classChildren.length; child++) {
+        if (classChildren[child].toLowerCase() ===
+        selector.slice(selector.indexOf(".")+1).toLowerCase()) {
+          classBool = true;
+        }
+      }
+      return element.tagName && element.className && tagBool && classBool;
+    }
 
   } else if (selectorType === "tag") {
-    // define matchFunction for tag
-
+    matchFunction = function(element) {
+      return element.tagName && (element.tagName.toLowerCase() === selector.toLowerCase());
+    }
   }
   return matchFunction;
 };
@@ -52,3 +83,4 @@ var $ = function(selector) {
   elements = traverseDomAndCollectElements(selectorMatchFunc);
   return elements;
 };
+
